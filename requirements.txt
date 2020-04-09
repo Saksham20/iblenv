@@ -1,10 +1,8 @@
-# iblapps
 pyqt5
 pyqtgraph
 ipython
 datajoint
 ibllib
-phylib
 # From brainbox (unused)
 # tensorflow
 # keras
