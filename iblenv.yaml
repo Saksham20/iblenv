@@ -1,4 +1,4 @@
-name: iblenv
+name: ibl_docs
 channels:
   - defaults
   - conda-forge
@@ -46,6 +46,7 @@ dependencies:
    - mtscomp
    - myst-parser
    - nbsphinx
+   - nbsphinx-link
    - opencv-python
    - SimpleITK
    - sphinx

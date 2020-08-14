@@ -14,7 +14,7 @@ sys.path.insert(1, scripts_path)
 from scripts.execute_notebooks import process_notebooks  # noqa: E402
 
 nb_path = root.joinpath('notebooks')
-nb_path_external = Path(root.parent.parent).joinpath('ibllib-repo', 'examples', 'one', 'notebooks')
+nb_path_external = Path(root.parent.parent).joinpath('ibllib-repo', 'examples', 'one')
 
 def make_documentation(execute, documentation, clean, github, message):
 
