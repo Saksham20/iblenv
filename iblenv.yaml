@@ -13,6 +13,7 @@ dependencies:
  - flake8
  - globus-sdk
  - h5py
+ - ipyevents
  - jupyter
  - jupyterlab
  - matplotlib
@@ -43,5 +44,10 @@ dependencies:
    - datajoint
    - graphviz
    - mtscomp
+   - myst-parser
+   - nbsphinx
    - opencv-python
    - SimpleITK
+   - sphinx
+   - sphinx-copybutton
+   - sphinx_rtd_theme
