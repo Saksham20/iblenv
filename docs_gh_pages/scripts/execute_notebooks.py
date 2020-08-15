@@ -7,6 +7,9 @@ from nbconvert.preprocessors import (ExecutePreprocessor, CellExecutionError,
 from nbconvert.exporters import RSTExporter
 from nbconvert.writers import FilesWriter
 import nbformat
+import re
+import sphinx_gallery.notebook as sph_nb
+import sphinx_gallery.gen_gallery as gg
 import shutil
 import logging
 from pathlib import Path
@@ -40,6 +43,7 @@ class NotebookConverter(object):
             Kernel to use to run notebooks. If not specified defaults to 'python3'
         """
         self.nb_path = Path(nb_path).absolute()
+        self.nb_link_path = Path(__file__).parent.parent.joinpath('notebooks_external')
         self.nb = self.nb_path.parts[-1]
         self.nb_dir = self.nb_path.parent
         self.nb_name = self.nb_path.stem
@@ -76,6 +80,33 @@ class NotebookConverter(object):
             self.execute_kwargs = dict(timeout=900, kernel_name=kernel_name, allow_errors=False)
         else:
             self.execute_kwargs = dict(timeout=900, kernel_name='python3', allow_errors=False)
+
+    @staticmethod
+    def py_to_ipynb(py_path):
+        """
+        Convert python script to ipython notebook
+        Returns
+        -------
+        """
+        nb_path = sph_nb.replace_py_ipynb(py_path)
+        if not Path(nb_path).exists():
+            file_conf, blocks = sph_nb.split_code_and_text_blocks(py_path)
+            gallery_config = gg.DEFAULT_GALLERY_CONF
+            gallery_config['first_notebook_cell'] = None
+            example_nb = sph_nb.jupyter_notebook(blocks, gallery_config)
+            sph_nb.save_notebook(example_nb, nb_path)
+        return nb_path
+
+    def link(self):
+        """
+        Create nb_sphinx link file for notebooks external to the docs directory
+        """
+        link_path = os.path.relpath(self.nb_path, self.nb_link_path)
+        link_dict = {"path": link_path}
+        link_save_path = self.nb_link_path.joinpath(str(self.nb_name) + '.nblink')
+
+        with open(link_save_path, 'w') as f:
+            json.dump(link_dict, f)
 
     def execute(self, write=True):
         """
@@ -222,8 +253,8 @@ class NotebookConverter(object):
             nbformat.write(nb, f)
 
 
-def process_notebooks(nbfile_or_path, execute=True, cleanup=False, rst=False, colab=False,
-                      **kwargs):
+def process_notebooks(nbfile_or_path, execute=True, link=False, cleanup=False, filename_pattern='',
+                      rst=False, colab=False, **kwargs):
     """
     Execute and optionally convert the specified notebook file or directory of
     notebook files.
@@ -234,9 +265,13 @@ def process_notebooks(nbfile_or_path, execute=True, cleanup=False, rst=False, co
         Either a single notebook filename or a path containing notebook files.
     execute : bool
         Whether or not to execute the notebooks
+    link : bool, default = False
+        Whether to create nbsphink link file
     cleanup : bool, default = False
         Whether to unexecute notebook and clean up files. To clean up must set this to True and
         execute argument to False
+    filename_pattern: str, default = ''
+        Filename pattern to look for in .py or .ipynb files to include in docs
     rst : bool, default=False
         Whether to convert executed notebook to rst format
     colab : bool, default=False
@@ -250,6 +285,7 @@ def process_notebooks(nbfile_or_path, execute=True, cleanup=False, rst=False, co
         # notebook files
         for root, dirs, files in os.walk(nbfile_or_path):
             for name in files:
+
                 _, ext = os.path.splitext(name)
                 full_path = os.path.join(root, name)
 
@@ -287,17 +323,39 @@ def process_notebooks(nbfile_or_path, execute=True, cleanup=False, rst=False, co
 
                 # if file has 'ipynb' extension create the NotebookConverter object
                 if ext == '.ipynb':
-                    nbc = NotebookConverter(full_path, **kwargs)
-                    # Execute the notebook and optionally make colab and rst files
-                    if execute:
-                        if colab:
-                            nbc.append()
-                        nbc.execute()
-                        if rst:
-                            nbc.convert()
-                    # If cleanup is true and execute is false unexecute the notebook
-                    elif not execute & cleanup:
-                        nbc.unexecute()
+                    if re.search(filename_pattern, name):
+                        nbc = NotebookConverter(full_path, **kwargs)
+                        # Want to create the link file
+                        if link:
+                            nbc.link()
+                        # Execute the notebook and optionally make colab and rst files
+                        if execute:
+                            if colab:
+                                nbc.append()
+                            nbc.execute()
+                            if rst:
+                                nbc.convert()
+                        # If cleanup is true and execute is false unexecute the notebook
+                        if cleanup:
+                            nbc.unexecute()
+
+                # if file has 'py' extension convert to '.ipynb' and then execute
+                if ext == '.py':
+                    if re.search(filename_pattern, name):
+                        full_path = NotebookConverter.py_to_ipynb(full_path)
+                        nbc = NotebookConverter(full_path, **kwargs)
+                        if link:
+                            nbc.link()
+                        # Execute the notebook and optionally make colab and rst files
+                        if execute:
+                            if colab:
+                                nbc.append()
+                            nbc.execute()
+                            if rst:
+                                nbc.convert()
+                        # If cleanup is true and execute is false unexecute the notebook
+                        if cleanup:
+                            os.remove(full_path)
 
     else:
         # If a single file is passed in
