@@ -12,7 +12,7 @@ root = Path.cwd()
 scripts_path = root.joinpath('scripts')
 
 nb_path = root.joinpath('notebooks')
-nb_path_external = Path(root.parent.parent).joinpath('ibllib-repo', 'examples', 'one')
+nb_path_external = Path(root.parent.parent).joinpath('ibllib-repo', 'examples')
 
 
 def make_documentation(execute, documentation, clean, github, message):

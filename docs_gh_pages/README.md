@@ -12,25 +12,35 @@ The website is generated using
 
 # Contributing to documentation
 
-### Including notebooks located outside of docs folder
-To include .ipynb notebooks that are not in the `./docs-gh-pages` folder in the documentation you must make a 
-[`.nblink`](https://github.com/vidartf/nbsphinx-link]) file that points to the location
-of the external notebook. Example `.nblink` files can be found in `./docs-gh-pages/notebooks_external`.
-It is recommended to place all `.nblink` files in this folder and they can be added to the 
-[examples page](https://int-brain-lab.github.io/ibllib/docs/06_recipes.html) of the website
-by appending them to the `06_recipes.rst` file.
+### Adding examples or tutorials to the documentation
+Examples or tutorials should be placed in the folders (can be in sub-folders within these folders)
+`ibllib-repo/examples`
+or
+`ibllib-repo/brainbox/examples`
 
+They can be either `.py` or `.ipynb` form but must have a prefix of `docs` to be included in the documentation, 
+e.g `docs_coronal_slice.py` or `docs_get_LFP_data.ipynb`. Each example/ tutorial must start with a title and a brief 
+description of the content. Please refer to the templates in the [templates folder](./templates) for examples of 
+how to layout the title and description in order for it to be correctly rendered and displayed on the website. 
+
+Once you have created the example/ tutorial you should link to the file in either `05_tutorials.rst` or `06_examples.rst`.
+The link should be made by adding in the following line `notebooks_external\name_of_example_without_extension`, e.g
+`notebooks_external\docs_coronal_slice`
+
+`notebooks_external\docs_get_LFP_data`
+
+An example implementation can be seen in the `06_examples.rst` file
 
 ## Making documentation
 Once you have made your changes to the documentation, the documentation can be built using the following command. This
-executes all .ipynb notebooks included in the documentation and uses nb-sphinx and sphinx to then generate the built 
-html version of the files. (make sure you install the additional packages required specified in requirements-docs.txt)
+executes all .ipynb and .py notebooks included in the documentation and uses nb-sphinx and sphinx to then generate the 
+built html version of the files. 
 
 ```python
 cd ./docs-gh-pages
 python make_script.py -e -d -c
 ```
-- `-e` executes all the notebooks specified in the build path
+- `-e` executes all the notebooks and python scripts specified in the build path
 - `-d` builds the documentation using sphinx
 - `-c` unexecutes all notebooks and removes any unwanted files
 
