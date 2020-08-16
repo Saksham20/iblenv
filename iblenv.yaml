@@ -1,4 +1,4 @@
-name: ibl_docs
+name: ibl_docs2
 channels:
   - defaults
   - conda-forge
@@ -51,4 +51,5 @@ dependencies:
    - SimpleITK
    - sphinx
    - sphinx-copybutton
+   - sphinx-gallery
    - sphinx_rtd_theme

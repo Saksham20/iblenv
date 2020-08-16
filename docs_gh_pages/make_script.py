@@ -1,5 +1,4 @@
 import os
-import sys
 import argparse
 import subprocess
 from pathlib import Path
@@ -17,6 +16,11 @@ nb_path_external = Path(root.parent.parent).joinpath('ibllib-repo', 'examples')
 
 def make_documentation(execute, documentation, clean, github, message):
 
+    # Clean up any nblink files
+    nb_external_files = root.joinpath('notebooks_external').glob('*')
+    for file in nb_external_files:
+        os.remove(file)
+
     if execute:
         process_notebooks(nb_path, execute=True)
         process_notebooks(nb_path_external, execute=True, link=True, filename_pattern='docs')
@@ -26,6 +30,7 @@ def make_documentation(execute, documentation, clean, github, message):
         # Need to make sure you have the documentation python files
         if not execute:
             process_notebooks(nb_path_external, execute=False, link=True, filename_pattern='docs')
+
         _logger.info("Cleaning up previous documentation")
         os.system("make clean")
         _logger.info("Making documentation")
