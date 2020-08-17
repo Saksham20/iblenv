@@ -37,7 +37,7 @@ executes all .ipynb and .py notebooks included in the documentation and uses nb-
 built html version of the files. 
 
 ```python
-cd ./docs-gh-pages
+cd ./docs_gh_pages
 python make_script.py -e -d -c
 ```
 - `-e` executes all the notebooks and python scripts specified in the build path
