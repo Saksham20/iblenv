@@ -1,4 +1,4 @@
-name: ibl_docs2
+name: iblenv
 channels:
   - defaults
   - conda-forge
