@@ -44,6 +44,7 @@ class NotebookConverter(object):
         """
         self.nb_path = Path(nb_path).absolute()
         self.nb_link_path = Path(__file__).parent.parent.joinpath('notebooks_external')
+        os.makedirs(self.nb_link_path, exist_ok=True)
         self.nb = self.nb_path.parts[-1]
         self.nb_dir = self.nb_path.parent
         self.nb_name = self.nb_path.stem
@@ -94,6 +95,14 @@ class NotebookConverter(object):
             gallery_config = gg.DEFAULT_GALLERY_CONF
             gallery_config['first_notebook_cell'] = None
             example_nb = sph_nb.jupyter_notebook(blocks, gallery_config)
+
+            code = example_nb['cells'][1]['source'][0]
+            # If using mayavi add in the notebook initialisation so that figures render properly
+            if re.search("from mayavi import mlab", code):
+                if not re.search("mlab.init_notebook()", code):
+                    new_code = re.sub("from mayavi import mlab",
+                                      "from mayavi import mlab\nmlab.init_notebook()", code)
+                    example_nb['cells'][1]['source'][0] = new_code
             sph_nb.save_notebook(example_nb, nb_path)
         return nb_path
 
@@ -142,6 +151,10 @@ class NotebookConverter(object):
             _logger.error(err)
 
         _logger.info(f"Finished running notebook ({time.time() - t0})")
+
+
+        # add in metadata saying if nb has already been executed or not
+        # when you make clean you also need get rid of the extra metadata
 
         if write:
             _logger.info(f"Writing executed notebook to {self.executed_nb_path}")
@@ -343,6 +356,8 @@ def process_notebooks(nbfile_or_path, execute=True, link=False, cleanup=False, f
                 if ext == '.py':
                     if re.search(filename_pattern, name):
                         full_path = NotebookConverter.py_to_ipynb(full_path)
+                        # if ipython already exits then continue as it will have already been executed
+
                         nbc = NotebookConverter(full_path, **kwargs)
                         if link:
                             nbc.link()
